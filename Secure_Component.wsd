@@ -1,0 +1,24 @@
+@startuml C4_Component_Auth
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Container(app_api, "API Gateway", "Go", "Единая точка входа, аутентификация, маршрутизация")
+
+System_Boundary(auth_boundary, "Аутентификация") {
+    Component(auth_api, "API", "HTTP", "API аутентификации")
+    Component(user_manager, "Сервис управления пользователями", "Go", "Управление пользователями")
+    Component(session_manager, "Сервис сессий", "Go", "Управление сессиями")
+    Component(token_service, "Сервис токенов", "Go", "Генерация JWT токенов")
+    Component(permission_service, "Сервис ролей", "Go", "Управление правами доступа")
+}
+
+ContainerDb(auth_db, "База пользователей", "PostgreSQL", "Учетные данные, роли, разрешения")
+
+Rel(auth_api, user_manager, "Регистрация/авторизация", "HTTP")
+Rel(user_manager, session_manager, "Создание сессий", "sync")
+Rel(session_manager, token_service, "Генерация токенов", "sync")
+Rel(token_service, permission_service, "Проверка прав доступа", "sync")
+Rel(permission_service, auth_db, "Чтение разрешений", "SQL")
+Rel(user_manager, auth_db, "Управление пользователями", "SQL")
+Rel(app_api, auth_api, "Отправка запросов клиента", "HTTP")
+
+@enduml

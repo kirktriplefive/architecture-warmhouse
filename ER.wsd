@@ -1,0 +1,158 @@
+@startuml ER_Diagram
+title ER-диаграмма
+
+entity "User" {
+  * user_id : UUID <<PK>>
+  --
+  * email : VARCHAR(255)
+  * password_hash : VARCHAR(255)
+  first_name : VARCHAR(100)
+  last_name : VARCHAR(100)
+  phone_number : VARCHAR(20)
+  created_at : TIMESTAMP
+  updated_at : TIMESTAMP
+  is_active : BOOLEAN
+  subscription_tier : VARCHAR(50)
+}
+
+entity "House" {
+  * house_id : UUID <<PK>>
+  --
+  * user_id : UUID <<FK>>
+  * name : VARCHAR(100)
+  address : TEXT
+  timezone : VARCHAR(50)
+  location_lat : DECIMAL(10,8)
+  location_lng : DECIMAL(11,8)
+  created_at : TIMESTAMP
+  is_active : BOOLEAN
+}
+
+entity "DeviceType" {
+  * device_type_id : UUID <<PK>>
+  --
+  * name : VARCHAR(100)
+  category : VARCHAR(50)
+  manufacturer : VARCHAR(100)
+  model : VARCHAR(100)
+  protocol_type : VARCHAR(50)
+  capabilities : JSON
+  supported_actions : JSON
+  config_schema : JSON
+}
+
+entity "Device" {
+  * device_id : UUID <<PK>>
+  --
+  * house_id : UUID <<FK>>
+  * device_type_id : UUID <<FK>>
+  * serial_number : VARCHAR(100)
+  name : VARCHAR(100)
+  status : VARCHAR(20)
+  firmware_version : VARCHAR(50)
+  ip_address : INET
+  mac_address : VARCHAR(17)
+  installation_date : DATE
+  last_seen : TIMESTAMP
+  config : JSON
+  metadata : JSON
+}
+
+entity "TelemetryData" {
+  * telemetry_id : UUID <<PK>>
+  --
+  * device_id : UUID <<FK>>
+  * timestamp : TIMESTAMP
+  temperature : DECIMAL(5,2)
+  humidity : DECIMAL(5,2)
+  power_consumption : DECIMAL(10,4)
+  state : VARCHAR(50)
+  value : DECIMAL(10,4)
+  unit : VARCHAR(20)
+  quality_score : INTEGER
+  raw_data : JSON
+}
+
+entity "Scenario" {
+  * scenario_id : UUID <<PK>>
+  --
+  * house_id : UUID <<FK>>
+  * name : VARCHAR(100)
+  description : TEXT
+  trigger_type : VARCHAR(50)
+  trigger_condition : JSON
+  is_enabled : BOOLEAN
+  priority : INTEGER
+  created_at : TIMESTAMP
+  updated_at : TIMESTAMP
+}
+
+entity "ScenarioAction" {
+  * action_id : UUID <<PK>>
+  --
+  * scenario_id : UUID <<FK>>
+  * device_id : UUID <<FK>>
+  action_type : VARCHAR(50)
+  parameters : JSON
+  execution_order : INTEGER
+  delay_seconds : INTEGER
+}
+
+entity "DeviceGroup" {
+  * group_id : UUID <<PK>>
+  --
+  * house_id : UUID <<FK>>
+  * name : VARCHAR(100)
+  description : TEXT
+  created_at : TIMESTAMP
+}
+
+entity "Notification" {
+  * notification_id : UUID <<PK>>
+  --
+  * user_id : UUID <<FK>>
+  type : VARCHAR(50)
+  title : VARCHAR(200)
+  message : TEXT
+  priority : VARCHAR(20)
+  is_read : BOOLEAN
+  created_at : TIMESTAMP
+  metadata : JSON
+}
+
+' === СВЯЗИ МНОГИЕ-КО-МНОГИМ ===
+
+entity "UserHouseAccess" {
+  * access_id : UUID <<PK>>
+  --
+  * user_id : UUID <<FK>>
+  * house_id : UUID <<FK>>
+  access_level : VARCHAR(50)
+  granted_at : TIMESTAMP
+}
+
+entity "DeviceGroupMembership" {
+  * membership_id : UUID <<PK>>
+  --
+  * group_id : UUID <<FK>>
+  * device_id : UUID <<FK>>
+  added_at : TIMESTAMP
+}
+
+User ||--o{ House : owns
+House ||--o{ Device : contains
+DeviceType ||--o{ Device : classifies
+House ||--o{ Scenario : defines
+Scenario ||--o{ ScenarioAction : executes
+House ||--o{ DeviceGroup : organizes
+User ||--o{ Notification : receives
+
+DeviceGroup }o--o{ Device : groups
+
+Device ||--o{ TelemetryData : generates
+
+User ||--o{ UserHouseAccess
+House ||--o{ UserHouseAccess
+Device ||--|| DeviceGroupMembership 
+DeviceGroup ||--|| DeviceGroupMembership 
+@enduml

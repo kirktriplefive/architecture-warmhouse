@@ -1,0 +1,152 @@
+# Project_template
+
+Это шаблон для решения проектной работы. Структура этого файла повторяет структуру заданий. Заполняйте его по мере работы над решением.
+
+# Задание 1. Анализ и планирование
+
+<aside>
+
+Чтобы составить документ с описанием текущей архитектуры приложения, можно часть информации взять из описания компании и условия задания. Это нормально.
+
+</aside
+
+### 1. Описание функциональности монолитного приложения
+
+**Управление отоплением:**
+
+- Пользователи могут удаленно включить/выключить отопление
+- Система поддерживает обновление только одного датчика
+
+**Мониторинг температуры:**
+
+- Пользователи могут удалить конкретный датчик
+- Пользователи могут получить список всех датчиков с информацией по температуре на каждом из них
+- Пользователи могут посмотреть температуру на датчике в конкретной локации
+- Система позволяет обновлять состояние одного датчика
+- Система позволяет добавить только один датчик единовременно
+
+### 2. Анализ архитектуры монолитного приложения
+
+В данном приложении используется язык программирования GO. В качестве хранилища данных используется СУБД postgres 16 версии. Есть одна группа обработчиков, которая включает в себя обработчики для работы с датчиками. На данный момент получение информации о датчиках, обновление датчиков, отключение отопления реализовано в одном сервисе. Таким образом запросы на сервис поступают как от клиентов, так и от самих датчиков температуры. 
+
+### 3. Определение доменов и границы контекстов
+
+Можно выделить 2 домена - управление отоплением и мониторинг (пользователями), обновление информации о температуре (датчиками)
+
+### **4. Проблемы монолитного решения**
+
+- При добавлении нового функционала необходимо будет проводить тестирование всего сервиса
+- При появлении новой команды, занимающейся, например, разработкой системы управления светом, расширение функционала текущего сервиса будет затруднено
+
+### 5. Визуализация контекста системы — диаграмма С4
+
+```markdown
+[контекст системы](https://www.planttext.com?text=RP31Ji9048RlVOhA2HEW5qwUI0WtJOZ6Cobb8qssMzBTHhqf6edHSF9eOlG9YD882EKLPj_8Vse4OhpiPl_vvzj_fg6DdvWqacwptcb94GbbjBCNga2cFU7sZHde0yzB_FFQMMZwQJVL8WbYPU2h1N7a3QIlkB-gJK-6NQzPhxPPEZqwz29V6v50wZJHuOTA9BK1l8xJ5ecELJcG8JWLjqGlbDENVQHFtEyqiKFA-5tQTquk0OawhGjJraBfE67x4rliY6QqAFrvLrnQKsQl09X27Tjxg7CNnyhUKex24l8TpUnuGo_hucBIAmhNnVUmkJXoMa4Q5frWq0VBRwYl4V21oLDubaMCvyADIRW3TETOoCsGspz-Xhr1tepXbFsJZcPCvFs3mvZVuNSnsp57d6eDxe8cMEAauCvt40sXUbZzDm00)
+```
+
+# Задание 2. Проектирование микросервисной архитектуры
+
+В этом задании вам нужно предоставить только диаграммы в модели C4. Мы не просим вас отдельно описывать получившиеся микросервисы и то, как вы определили взаимодействия между компонентами To-Be системы. Если вы правильно подготовите диаграммы C4, они и так это покажут.
+
+**Диаграмма контейнеров (Containers)**
+
+```markdown
+[Диаграмма контейнеров](https://github.com/kirktriplefive/architecture-warmhouse/Container.wsd)
+[Картинка](https://www.planttext.com?text=dLXDRzj64BthLx0-9O0JeMrwwIcE6wHfOrIsLVGeK18h4v54WwJg1aK1oyvNaG1kWnJe8MtgzD2h4bkr7CdoNrZ-exwPvVSkzP4aKaHozytCcxUpixpf-QRhzpfjO_r6xNRRwbXTtojzP7SRxLxJCdPyVzVxl5nspRthBTlVwTLxdkKsdAwFSTSRJgUyspQxDF-QvpVRThsyVkDQXMvzkt6lt34ztt9ngxQE6QRTjTphknXRAbKirtEwLnfj6pYhnefuBQPY73mNP_Z_dHW41s98rolqx8KOYu4ufJjY63msWaCn4HSOU2Ac1kvFSJbOkLegRJ-0lKxjbjFhDattmPMEKxVRLitZsuJq2cFVYX5R8e2X8Iw3VRg1Y_zWu0A_XojNZPzA1lx4NaT8vkxk4Z0OQd-plMgiTPkkOpSvbdzuv00nZgDnY2Ve1mUuFHNdz8i8G4WZ0_zm_PW73iX0S4Jt4UhFQh3chbrhcRwrPpw0eRNANUEElDA4WpWGYvqRXyix3dlvErWTiT4Z0_vCWoVYlHWOubtm24wUYi6gWMU7dAKBV8-2XnYF8N0MJkBfX1mEdk93eqR8Q_YimFcUlvFAqs_09ILSObQVA6Q2dkiYuOcM-uFTi6ZcCHIo3m97GN-6Y-0m3lQhxweS8vxHo6Uhf2zDalf0xkCxIKB6ao_gqfTcNGOme92X2vskyJadqnN7yrkkjRrvJse3D0yn0awGf40pRFC5V29rZCM8Vm4RtyFWgVIkYDIcHQpKEgsElwpqD4o7Q0LSgq0fEVqDUoSqZ4V48k5ne8JcicGe-44wRXsiodleMPPvlKCvnb_JSnR6cDQQCWLUqIA8xq8Zo42usDz126ToNRmlI3H9HPyRhs5rJTTsKg8_JgzqkVefMwpD2IDcbf6Ie0Io84MPKe9VwHJfn17V6d41dipsYKMj9YVsAfSUhJEQzCJsePS37dk2luYALYfl2f5mutMGAjkMvvajgrPtdVkM2yWDUSEunJV8o9PPhzl-ncRvQ_Fx-oQR_PLMEGJuY9D-4TP1P9fYdg0wNAIB7GiNLVyqE9H58kGxMaXgxXiVozJmWi3S2Kk8J8Kw6ykoIqyk6L0k4eIiIxlCTctFT3jA1PnofYwZf8AXsIdNMINXwrQTwPjrqqiCnpLFQpINsZSQEmFTScENS3cHcm1hRifbGBEg6fyimcmV8NEfcS5cssxj-1ewvTnV5gKpCZNbEb18OMmjnQ76Kex3uwHyfeAIEmIkBqCLpjWX6fykm1U0frmd3sRmrNGSLw4hcJYdqCG3uqLJI5LaA6OgOsG6Gyb0o4m6F9Kz5VUGhBf3wZWAgBgXeMh2zM4KGU7toKnLxJWTjKlHWoIC_INUGWOZSQuTIfcVXj4SoLodU-927YDNaeASXz7mALqPHELfp3mCPLtEx-XKhBH4VgOIAHMBVcP4VGshudm6ZLrhJzdST0W9XtzIpK17SMu43xc0l-SjYzWSYF4ida9RCKq5Td94lUG2I1sRJDTGdXMKnYv3qUqVVOJOzHmthgalcSqdjDyKxGWOTjUfwZgvAIZKOCV59WEU5CMPW1gyQ4McuRAhSYcuI9WPkC8riXHqcCjCt4e-fV1du9Qsh7PySiqU3F_WiXisWj0P2ALqywwZ72gaeI-hrSesK0aq3POSqSGBAEKC7-hD2H5dDkvSRczNo-dfyPJyeOZRNCxlFlUhoN67jr8CQMrLrgFGOXYruzSsycNzUQdeP95O8sDv6qh71kSFSTWUPrekAbOeHS-u_pmlwFNNDZOhIaow9bc_SslEtLdNLIYDytnSbZint2_3qhneYbtFDNhQdJJNUr75oBcjuCNrO6u7CmSeAWGBRV5piA8gy6gX7MyUMhpmYwjoPbyOvTT4bdirpyT91ejxzoInQSYG_dcO-evGWoUpC1SkKw3JC0ke-ats75Pmc4kBECjVRfFJwALCcMB_-WIriLcjbjUTjGBkyXlRXmDAyd8RsuV3IHNdDZRvglEGNlQaJrsPPaegi0YMvPpTqrvGTu9v4ouugKEnV0-PHf9B9BD5fDvS_IlVcCaW2PEBbtmJIzsDlcndNi4i1g4ABVUgO46OZBAKG-bo8A62r7FPSZ1IECgHPJaGAHUbNryEXDMHxsNdGvHkMjrchzF-7m00)
+```
+
+**Диаграмма компонентов (Components)**
+
+[Диаграмма компонентов сервиса сценариев](https://github.com/kirktriplefive/architecture-warmhouse/Scenario_Component.wsd)
+[Диаграмма компонентов сервиса сценариев](https://www.planttext.com?text=ZLNBRjD05DtdAqnMhTGqcwvO5O9K44LAQLbR4tj8hSOFsMEg227rGNaeIAKLx10LVn12NToaINzX_4USkKaJFn8WJMDxviuvzvxxy7eWc2z2kwNLrlIQQtkkmnsXRnlSORxbbkvPZj4AJQxj2k45zwjLd-slDYsn6pR2WFk6wmZOhngkNVLQp558bK2OBQjHhQrLwchfnRFDgiq2mVrgccFLWssfL0C2inpkBp7FqvbdhMZb1_KdsWOJV9-rotZSSDMl_2elPIo7ifkSQicH72NlPLzsDTbBJkG8UzqL3Nl7s8ha4BznyXRsC4dUuVuKkpUuFqW-u5zPnVBttLvvkLJQRiD5Mt_eXex9_FPIC950RqnMb0y_O1-H3mSu7slgsuK7S8VGSwZQwvA6ppJc6UWqK1NQuvsTUdaIDm8Pg02FvIquW2q7n1YhnSCqVN8AoXYkPodyiCLrxZIXANai8nZtO7weuMP4SDSfMR-eJNc5dRxIiYDloMWuPPqw4ij1WKtuLhF9VTrc3iErm7X4Glt2NqJilHJpDwA84F6LsfrZZ8Xn-PbqIDZh0ZipXEKwkca57XF6xXp-xFbqrDX6g158tnCxt80maFY8GYsIJNDdgAMWG5P1hOrGUOSg3kIlJqLwaCiQxj8QdAk2WN4NMV-4mnrvhVq_pa8NNx6MPJBX5WJ11LGuVZckKXHGsfdPtbyutwIwzb5ZHces5CWPGD022yAkku5e-dnxQvCOBsQbfVetMm59PoMN5UhKAVTMo4E-PFCWGEdf3T_T6-VaZ8gdFwufLG2g13wEwtbS14_PopsccluvR-LwSa6MHuW9iX14j20sQkFbBEOCPNvkBiQ5JXcYQTPNkkCXehmFyQHYfom5RSV8uwV0Sdc0pya9oJjfvOL-gsGiXYtg-nqEtSs4FcKwrMJ0rEIeCAgIaonJOMuKQIvegjzIev8qmnmNgY6hUW4qDmi_awQnwe7nXCxEDfXOJiNczWGkSthkg3dFZqjeN9WZC6IfrCq1-hV4D19kA9UNkQ2dhytSkwM8WQwaXH69s5EW0ygOUbjsKx2bTUwOU3l_0G00)
+
+[Диаграмма компонентов сервиса управления устройствами](https://github.com/kirktriplefive/architecture-warmhouse/Device_Component.wsd)
+[Диаграмма компонентов сервиса управления устройствами](https://www.planttext.com?text=dLRBRjf05Dtp5IwhH6h29gkkqX8fhPf8f4dNQ80fiO9jP1iYL5K2MjfKL4MjL7MNX_e33WsA2O7ymimVzTmn61FiH6ga87lkzRdddlkmDnsNsMxDg6ZPZNpMCggMoKqtlyNhUf6ddkXciL8hSUtGTQlEiqp6PiVhPTqzh1Lg3hUBbkd2Uxre6PbgXPc4i-QufOfUo6Gtrd9qz7Pt9sCmn-Ls9XfXlGhVL2eB1AQRt5vXrMgULVMdMlfvxfMspLn-p1fft6vRz2j-YIlXYx7mP4-JRJ6HNyIDy3JHbnqnWSrxgi7s4QQ16EFNbv_W3nVv6TSzM6zntPGd-2SlNrpFREdLL6g_0Of6_eLLCqlCRgoKb03vmlIU6FmHTx8fFD4N8ue1X846g9PiutWYXdG5euT0VdfLUv_Iy1ScF4CCSwIiNXuSv5HsFu4ta2SATQYH0aXfHAbIn4kasvPTJROU21WV3gKnc5cY61U8q8I_3vWfEb0kvn6WbXzH_3HgWznGKuFBX8G4qIjmkQ-8qZAMXytBkkC6GiOGmVr0_AKJbPmgZF1ZietmEySZWy0UuwZXSU1rD7NhmGWNcFj93AksLTSTtJ9rivp4igN4dYZ8YUofPXl9RqWTSVyhYOj4H2z15ZfUHan8giugUecvo2heCW-LycbQLBXcX4ZKbXI5D0r416SbFHwOiKziGLx73OKuKrXNyZim1Wl1pz1AbohypJnyItLdLmKPnkVy8R91jWgpWAK2OVv0GXZn1FbpbkEMRRw_jvCEgQcDCOgj6DO7LIGyfL716RM_ZnNKGoGm1wEGpbwDr_YAmHs7bR57REk8sugM0hWX0O8KASclquKo93AlsRiZHZifzOPN5jR6yaoVgIOTKDLmrLwOJzaDLyng4bHqB7_ZiJkbGqljciZOU8yZtH-VyzZELPFIHr4x2NLP3X9c6qCPAof0ZAxa9UAwkMPmOn5raMxij0JjsbSAqwlcWSw7kzCmYuiXvaIN1o5iTrofkj7hw5RbC5kaS6JBe5ECvRwwc4zB_8QWjyxkNkuHZi7i04nsr6eVexU982K_MrA1q0H8u_Euh4cOIahKIdNl6CVT-wZXHy72orESugdPcqTz15pFMvTgH6D0wWPV0j7cJMroiuGlZty0)
+
+[Диаграмма компонентов сервиса управления температурой](https://github.com/kirktriplefive/architecture-warmhouse/Warm_Component.wsd)
+[Диаграмма компонентов сервиса управления температурой](https://www.planttext.com?text=bLJBRjD05DtxAuQi6YcDDrsnQWbI0HKfq22MrYGP9HRnG_QOAa98ISkZKf42GcnvY0LRAn3L49B-mimVSSQEWny95P4oyipSU-uzzvux-pwd7W-i0Mdi6Gt7SXsRsTmu27XVks7QdK7GPQJFkUlVr7MFdjHx9ky7xS1dNiUnEMph7SVItG6r5Sgkpxi3iwqtzdQRwkZH_IFTeZvddfx5hxkmrRG64AXfCs-7kgv1NRD6AWVDk-IGSdP2XnLi3nsrYW_YXuZ4GeHoGkIfMChNufS8YPZAbsA9kx16S7U6gvbOO8ta2zZ3HBx2zmItl_4zakVuAwj8NAPtbQgc7G-HecNSSWAxIxtX3WLzextQgVXljsDNgkIPHl1RiqlSrtGKWJkjLhEoOhSzKH4XcJoKAhHXKPlscASI-I9cSYIcy1iJUIQki0cndIiubGqHLoZ8NBu1mIKkmZZIN4vGW2XJqAz5Lp7xjsinCP_vlkdOMtCROpF66ecVruJzQxeb57UUCDj08PwQ7LOA13MWVWeCIMT2lO_FbE6gKUJUurRHl1ZAPPvb9iIsnHkf8W7WEbhher2H8X3f4YnFLTD4YC3FC_g_tKuqqsqhj7TmkLJgtjYFD7JJyNdFOySFZf8KC18pM2paXGgEaK0UyQQMvXp5Ny36EfFdgMJK03naWungYwBx3DFlYZtINvTJL-JYMHpbnYbLUpK6pKDj5CqIpacwUJKaDFsXtLbXbRnBmYZtl2oF3631VtFpFyNLcyQeyPkpwcknetdeJLYP5dzB7e24SQad2NFLsKr5pC3yznJdODUFRkQz4XzXduB6TD7P-01S5I31wLm5Yf-lCDDkRP_PNRphVm00)
+
+[Диаграмма компонентов сервиса авторизации (безопасности)](https://github.com/kirktriplefive/architecture-warmhouse/Secure_Component.wsd)
+[Диаграмма компонентов сервиса авторизации (безопасности)](https://www.planttext.com?text=bLHDRzD04BtdLomvDL8QNthYr1Aa0YfIQ8iuMfjabLh47xBNL152Ibi-Ae4K4EBAXpXmjGfH3I7fNzZzHxnP9y5n4YeYPUNTdNapR-RDRaUIXp9skwo-PTTzD_0zuKbx9vP7fHkEr-h6RS6Ef0oYcvOLykDQnv57SJEEHDZoFGdRMijthQ3BFKBPZ6IxwpIj-jPcWuuUtj-pN1v94Lfv_5e0srAf3WJkU2BSu45Wyy2fil9EuoxRvL8SyruPsrsVLlL1_L2f6gj43vW-LHFzIlrI2LCN-eMQu2wfCjoTuMgenbXJ_HpsCD4lyJt0xMzyz_Kv_cILgilPNRbIAXtqaA9ht_9Zhyt3tWO7VRivtL7yj-knonNsjCJmcxFBtETqY41dlr4lJzcjJrIbI6OHYWfjkzpZ7H5I8b_KKFVL1VnEc3vJLzWas8u8Zh9XwWe56Uat83Z1HM8YZVG01KXp1VrQT5N3VxiM4uj453c-jpQt4snEiARgvpLX_vgk2INznyApKOWdJaii1O8QK3y2GzAvKE_D6HbE6yNkFJeicXT31I9qdOpOkdXzAX80hgCrFqg858D89s1vIarJ2G8_o-d_TZFJJBj9QE_WSadgNjcFMUY67ybEA0uUx6KfO2I6i1ZhrnGS8u4ypAOwoparNy36EjJdCydG0EoBRawrHT5zXkbtOe_qv-MqY9oPnVx2ECtKNZ6WYr0hHJE1SvRkeXeocb7FQqsnbhoNXB7SysLvv00B_gkR_ybKxyAWcZTdsjTYHnUXLs7bMlmjUm0onaizoPXJPrSLCGVptrEy03j_T7FlbVe8-nceeOlEcWDm9K26qn45Ci-NeNtdyB118jeMNXll-Xy0)
+
+**Диаграмма кода (Code)**
+
+[Диаграмма кода для сервиса телеметрии из сервиса управления температурой](https://github.com/kirktriplefive/architecture-warmhouse/Telemetry_Code.wsd)
+[Диаграмма кода для сервиса телеметрии из сервиса управления температурой](https://www.planttext.com?text=nLRTRjem5BxdAQnTKNMy0AfGE-XMf7O_m7hlEeTWrOcPxR1cMwMgkzmxx1dQYqhLLcsl4DvenubZm41NxMOI4Sdv-NB-lkFiQqELoH91HY0W0QFohg1QzpYD5KqQXXi1fFXUtCwlYflYjlWrlov-53S4_-wAdtWz57VpQrJU5_ULyA7uZIAqHl7N-TNyMwCnfUoSna2U-PUGjqeoq9gdyJFokK48JmseCMMm2CIPI5KQ4B9REpKLq0WzsmlRGINPQIy13q1dmZZNKofuH0qywkkCk4ozxoLU-6EsAEYIJ45HaobO1CUJgGLAZTuUUeimcOvv-LOFqIr5JZ-hNYtLKc2djQp6e89beZ8wJ475UTTB_b-5R6Hr770mm-HYZw7Rv9XhinSYTH0gajcP00VG0mFC7AGoeI9_D88pASLwNyAA-P6finhGDFw7r1O0BnLyo21bUJE26MVGZzf46uM-pudX2I2HaccRzD1qX8_R0RiJOEUz4cDeS13q6Y3wBkl3RCFM-rnz5vo5J7MMJ6q0J-b7vNI2Kiwq7oU8E3EluS8SoKmj8quGHwhyQGtU9M_GA-6VOCWc46K2cYnJ2abZ-L2ROY6fYc55XZZEDUJbvT9UmQfJSY8Z4BfQ9y5SkAWy6tj1nPrujDx7MhEWRJ2vHrd28sxoGFo26bne-J7CGBJjTdFo8OzJAeO6Su_DPA7P9Q_0lCjmP4m-P591CwnWNvS3rTpAWM2n-6HFU7eWXFm8qN9XQoMzsAvyFrsP_7PPeE6Kfaxl-3gQAD0JAQ8WOioex1qL5VkgEH_bKwW7tDxlh2p5qZBCBTnOFhM-7cRCgdnDhDIPGsJ7ehruzEEm4Zw7cXKkdOvJ3u3911TxnU7QQ5NQSQaUKUtHjdLeXM0-XMx5WoLgXQkHSYonD5G4YgxKvb3R-XexbC1ifPtkS3pcZDkcbSCKDCOlYY6TsQrW8tQt_NGiQterDfndUrzQhOtdO6FZuTXgTJQTPrjjruwrlwCwRZzc6Hwv6_AoXci7uzgcNOHOxyd6Feu2VZ_z0G00)
+
+# Задание 3. Разработка ER-диаграммы
+
+ER-диаграмма ключевых структур данных
+[ER](https://github.com/kirktriplefive/architecture-warmhouse/ER.wsd)
+[ER](https://www.planttext.com?text=jLTHYzms47xVNo7oqZHa8Gaz6aekP9DrasroT-5kh_JDwEnPhy2MN4dUpIONw6zeAGqb3VGN990-zA4_mlr76SbhMxQrItfG3expV2DfvjCtCxe7IbEfYombmMauPJIHD1jffbD0mxZyg_ox_51-_FSd_FqF_dmOZO0Zl27NpXN8Q-JLY90RfC2_GnQJRyZv-MnAxjrx_lJ-VKJ6Omj3HbcAuFUJqqTF9gVNxnmSV6c1d2gr5Z8EbrGjXmuB9fKEESt0mMxVkcMmbEw4ygNW4F8Ykm3fRch1I0BL48TK8pIV7GLdyydHSmIAFFO3J8KqqcnbJdfuSl8ic1oZLHKNAf8irqpmKBFEIGTuqkkMgIS2-QcfMfgFFLmDgFosWcyGVx8qZYKePM8EVfYZGRCCNY81lNYGCH5H6srgKvm6ZsP7asUupysxNPWdBdoxWdVovgF7INuAAnR1V9Ct3CJM4ceqxU71dos628cGcq5o6UN50kCePEScjiio4KFg4OeKMaGYjR4CjeneJYzOol1o3RtVdPrKzvxdGbec8aEN0qM2BrWIgcY9Wg_D0ofwDEncOAYKHWgxA6mSK4ICfiCQs2Rk9nTRWIxKe6Am2hCrbH2kG2hCU40KoyDMXRFZO6xl8tACpK5VMt-E9wLffJPJT4PkatbGLxK2u3sHLTIsL6UWAQxqiJo7512McodYDTcwDkxXstCX3P-cg33eBE_5fI7BGL8ZEwTc3cxUCNakYup59gO1aeirLZacfOhCTf1kFNvLtyPGb2kQ5k3nBZZJWvlxiQ0etmqgKjZuPiVpu75mYeYawt07VsSHS2gPgAbJs--hATMlj1YQtkaqBicI16dn5cCD8cT8QRLkgmLiG1ZXHGfnfq7d6BEis6_p_g_TtyFBn9PzpKxL1FPmuwMlNyWURBknbuoSufG6ZUNOiW0l82hi4fodjkRRhB7vKLG16FAKWmnwqsCfYhnEBJ4V__kjxxWH9xHZeTc2LSEfZeqxjYiCKx_4xAl7hQ5gTc0Bemcq4Jl2wfOR2X6JwQfmf-0y7UmBSdXuICe_ov_Bz-LlvHjIlYt_AD-LlvHlob_7vU_bkx5ZUMkykyyn-z2OH156tEhJV5tflR7pVhTxfh3g3DMAHNn0ylttwKZj2CnyKalMY2vhB7jY7YhpSmegZhrX6UB8vULuB5uHIo0wY3LNe-fZYrH18uGrf2bEi57xi1dwu1XJg4_eRLAt47I9OS4uuesfvr9r6NIiwhg_ayEX2LScbBENwEGcuzODEac805zfQZHo5xyMtT0jjOrFlLLdfXelu6RgcStS4tiQx8RS1vqJBY-9LnIa4-f-pmV0O_mtvXC0)
+
+# Задание 4. Создание и документирование API
+
+### 1. Тип API
+
+Для взаимодействия между микросервисами выбран в основном RestAPI, но в процессе получения показаний с датчиков будет использован AsyncAPI.
+
+RestAPI выбран из-за того, что большинство из взаимодействий микросервисов должны проходить в синхронном режиме. Например, процесс установки расписания - клиент сразу может получить информацию о том, записано ли расписание в БД. В то же время  процесс получения данных с датчиков посредством обмена сообщений через брокер сообщений должен быть асинхронным, для того, чтобы сервис датчиков мог отправлять показания всем клиентам, которым эти показания нужны (тем, кто подписан на события)
+
+### 2. Документация API
+
+Здесь приложите ссылки на документацию API для микросервисов, которые вы спроектировали в первой части проектной работы. Для документирования используйте Swagger/OpenAPI или AsyncAPI.
+
+[Swagger](https://github.com/kirktriplefive/architecture-warmhouse/swagger.yaml)
+
+# Задание 5. Работа с docker и docker-compose
+
+Перейдите в apps.
+
+Там находится приложение-монолит для работы с датчиками температуры. В README.md описано как запустить решение.
+
+Вам нужно:
+
+1) сделать простое приложение temperature-api на любом удобном для вас языке программирования, которое при запросе /temperature?location= будет отдавать рандомное значение температуры.
+
+Locations - название комнаты, sensorId - идентификатор названия комнаты
+
+```
+	// If no location is provided, use a default based on sensor ID
+	if location == "" {
+		switch sensorID {
+		case "1":
+			location = "Living Room"
+		case "2":
+			location = "Bedroom"
+		case "3":
+			location = "Kitchen"
+		default:
+			location = "Unknown"
+		}
+	}
+
+	// If no sensor ID is provided, generate one based on location
+	if sensorID == "" {
+		switch location {
+		case "Living Room":
+			sensorID = "1"
+		case "Bedroom":
+			sensorID = "2"
+		case "Kitchen":
+			sensorID = "3"
+		default:
+			sensorID = "0"
+		}
+	}
+```
+
+2) Приложение следует упаковать в Docker и добавить в docker-compose. Порт по умолчанию должен быть 8081
+
+3) Кроме того для smart_home приложения требуется база данных - добавьте в docker-compose файл настройки для запуска postgres с указанием скрипта инициализации ./smart_home/init.sql
+
+Для проверки можно использовать Postman коллекцию smarthome-api.postman_collection.json и вызвать:
+
+- Create Sensor
+- Get All Sensors
+
+Должно при каждом вызове отображаться разное значение температуры
+
+Ревьюер будет проверять точно так же.
+
+
