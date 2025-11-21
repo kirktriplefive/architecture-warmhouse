@@ -1,30 +1,46 @@
-@startuml C4_Component_Device
+@startuml C4_Component_Unified
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 
 Container(app_api, "API Gateway", "Go", "Единая точка входа, аутентификация, маршрутизация")
 
 System_Boundary(device_boundary, "Управление устройствами") {
-    Component(device_api, "API", "HTTP", "Внешний API для работы с устройствами")
-    Component(device_command, "Сервис для обработки", "Go", "Обработчик команд управления")
-    Component(device_registry, "Сервис для регистрации устройств", "Go", "Реестр устройств и их статусов")
-    Component(device_provisioning, "Сервис для самостоятельной регистрации устройств", "Go", "Самостоятельная регистрация устройств")
-    Component(device_validation, "Валидатор", "Go", "Валидация устройств и совместимости")
-    Component(device_event, "Продюсер", "Go", "Публикация событий устройств")
+    Component(device_api, "Device API", "HTTP", "Единый API для всех устройств")
+    Component(device_registry, "Реестр устройств", "Go", "Регистрация, статусы, метаданные")
+    Component(device_command, "Командный процессор", "Go", "Маршрутизация команд на устройства")
+    Component(device_provisioning, "Сервис подключения", "Go", "Самостоятельная регистрация")
+    Component(device_connector, "Коннектор устройств", "Go", "Единая точка подключения к IoT")
+    Component(telemetry_ingest, "Прием телеметрии", "Go", "Прием данных от устройств")
 }
 
-ContainerDb(device_db, "База устройств", "PostgreSQL", "Профили устройств, настройки, привязка")
-ContainerQueue(message_broker, "Брокер сообщений", "Kafka")
+System_Boundary(business_boundary, "Сервисы бизнес-логики") {
+    Component(heating_service, "Сервис отопления", "Go", "Логика термостатов, расписания")
+    Component(lighting_service, "Сервис освещения", "Go", "Логика управления светом")
+}
 
+ContainerDb(device_db, "База устройств", "PostgreSQL", "Профили, статусы, подключения")
+ContainerDb(business_db, "База бизнес-логики", "PostgreSQL", "Расписания, сценарии, настройки")
+ContainerQueue(message_broker, "Брокер сообщений", "Kafka", "События устройств и команд")
+System_Ext(iot_device, "IoT Устройства", "Датчики, реле, камеры")
 
-Rel(device_api, device_command, "Передает команды", "HTTP")
-Rel(device_api, device_registry, "Запросы статуса", "HTTP")
-Rel(device_api, device_provisioning, "Регистрация новых устройств", "HTTP")
-Rel(device_command, device_registry, "Обновление статуса", "in-mem")
-Rel(device_provisioning, device_validation, "Проверка совместимости", "sync")
-Rel(device_registry, device_event, "Публикует изменения", "async")
-Rel(device_event, message_broker, "События устройств", "AMQP")
-Rel(device_registry, device_db, "Сохраняет состояние", "SQL")
-Rel(device_provisioning, device_db, "Сохраняет метаданные", "SQL")
-Rel(app_api, device_api, "Отправка запросов клиента", "HTTP")
+Rel(app_api, device_api, "Запросы устройств", "HTTP")
+Rel(app_api, heating_service, "Управление отоплением", "HTTP")
+Rel(app_api, lighting_service, "Управление светом", "HTTP")
+
+Rel(device_api, device_registry, "Запросы статусов", "HTTP")
+Rel(device_api, device_command, "Отправка команд", "HTTP")
+Rel(device_api, device_provisioning, "Регистрация", "HTTP")
+Rel(device_provisioning, device_registry, "Добавление устройств", "HTTP")
+Rel(device_command, device_connector, "Маршрутизация команд", "async")
+Rel(device_connector, iot_device, "Протоколы устройств", "HTTP")
+Rel(iot_device, telemetry_ingest, "Поток телеметрии", "HTTP")
+Rel(telemetry_ingest, message_broker, "События телеметрии", "HTTP")
+
+Rel(device_registry, device_db, "CRUD операций", "SQL")
+Rel(heating_service, business_db, "Настройки отопления", "SQL")
+
+Rel(heating_service, device_api, "Команды термостатам", "HTTP")
+Rel(lighting_service, device_api, "Команды светильникам", "HTTP")
+Rel(telemetry_ingest, message_broker, "События для бизнес-сервисов", "HTTP")
+Rel(heating_service, message_broker, "Подписка на телеметрию", "HTTP")
 
 @enduml
