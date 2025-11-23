@@ -1,0 +1,98 @@
+@startuml C4_Container
+!include C4_Container.puml
+
+Person(client, "Пользователь", "Владелец умного дома")
+
+System_Boundary(mobile_system, "Мобильное приложение") {
+    Container(mobile_app, "Мобильное приложение", "iOS, Android", "Управление устройствами и сценариями")
+}
+
+System_Boundary(api_gateway, "API Gateway") {
+    Container(app_api, "API Gateway", "Go", "Единая точка входа, аутентификация, маршрутизация")
+}
+
+System_Boundary(auth_system, "Безопасность") {
+    Container(auth_service, "Сервис аутентификации", "Go", "JWT токены, управление сессиями")
+    ContainerDb(auth_db, "База пользователей", "PostgreSQL", "Учетные данные, роли, разрешения")
+}
+
+System_Boundary(device_mgmt, "Управление устройствами") {
+    Container(device_service, "Сервис устройств", "Go", "Регистрация, статус, метаданные устройств")
+    ContainerDb(device_db, "База устройств", "PostgreSQL", "Профили устройств, настройки, привязка к пользователям")
+}
+
+System_Boundary(scenario_system, "Сценарии и автоматизация") {
+    Container(scenario_service, "Сервис сценариев", "Go", "Управление правилами и автоматизацией")
+    ContainerDb(scenario_db, "База сценариев", "PostgreSQL", "Правила, триггеры, действия")
+}
+
+Container(message_broker, "Message Broker", "Kafka", "Асинхронная коммуникация между сервисами")
+
+System_Boundary(c1, "Система контроля температуры") {
+    Container(service_warm, "Сервис отопления", "Go", "Управление температурой")
+    ContainerDb(database_warm, "База отопления", "PostgreSQL", "Температура, настройки термостатов")
+}
+
+System_Boundary(c2, "Система контроля света") {
+    Container(service_light, "Сервис освещения", "Go", "Управление светом")
+    ContainerDb(database_light, "База освещения", "PostgreSQL", "Статус света, расписания")
+}
+
+System_Boundary(c3, "Система контроля ворот") {
+    Container(service_door, "Сервис ворот", "Go", "Управление воротами")
+    ContainerDb(database_door, "База ворот", "PostgreSQL", "Статус ворот, история доступа")
+}
+
+System_Boundary(c4, "Система мониторинга") {
+    Container(service_home, "Сервис мониторинга", "Go", "Общий мониторинг состояния дома")
+    ContainerDb(database_home, "База состояния", "PostgreSQL", "Общая телеметрия, статусы")
+}
+
+System_Boundary(c5, "Система расширений") {
+    Container(service_new, "Сервис расширений", "Go", "Новый функционал")
+    ContainerDb(database_new, "База расширений", "PostgreSQL", "Дополнительные данные")
+}
+
+System_Ext(sensor_warm, "Датчик температуры", "IoT устройство") 
+System_Ext(sensor_light, "Датчик света", "IoT устройство")
+System_Ext(sensor_door, "Датчик ворот", "IoT устройство")
+System_Ext(sensor_home, "Датчик мониторинга", "IoT устройство")
+System_Ext(sensor_new, "Датчик расширения", "IoT устройство")
+
+Rel(client, mobile_app, "Использует для управления", "HTTPS")
+Rel(mobile_app, app_api, "Вызывает API", "REST/HTTPS")
+Rel(app_api, auth_service, "Проверка токенов", "HTTP")
+
+Rel(app_api, device_service, "Регистрация/управление устойствами", "HTTP")
+Rel(device_service, message_broker, "Публикация событий устройств", "AMQP")
+
+Rel(app_api, scenario_service, "Управление сценариями", "HTTP")
+Rel(scenario_service, message_broker, "Подписка/публикация событий", "AMQP")
+
+Rel(app_api, service_warm, "Управление отоплением", "HTTP")
+Rel(app_api, service_light, "Управление светом", "HTTP")
+Rel(app_api, service_door, "Управление воротами", "HTTP")
+Rel(app_api, service_home, "Мониторинг состояния", "HTTP")
+Rel(app_api, service_new, "Дополнительные функции", "HTTP")
+
+Rel(service_warm, message_broker, "События температуры", "AMQP")
+Rel(service_light, message_broker, "События освещения", "AMQP")
+Rel(service_door, message_broker, "События ворот", "AMQP")
+Rel(scenario_service, message_broker, "Триггеры сценариев", "AMQP")
+
+Rel(service_warm, sensor_warm, "Управление/опрос", "MQTT/CoAP")
+Rel(service_light, sensor_light, "Управление/опрос", "MQTT/CoAP")
+Rel(service_door, sensor_door, "Управление/опрос", "MQTT/CoAP")
+Rel(service_home, sensor_home, "Получение телеметрии", "MQTT/CoAP")
+Rel(service_new, sensor_new, "Взаимодействие", "MQTT/CoAP")
+
+Rel(auth_service, auth_db, "Чтение/запись", "SQL")
+Rel(device_service, device_db, "Чтение/запись", "SQL")
+Rel(scenario_service, scenario_db, "Чтение/запись", "SQL")
+Rel(service_warm, database_warm, "Чтение/запись", "SQL")
+Rel(service_light, database_light, "Чтение/запись", "SQL")
+Rel(service_door, database_door, "Чтение/запись", "SQL")
+Rel(service_home, database_home, "Чтение/запись", "SQL")
+Rel(service_new, database_new, "Чтение/запись", "SQL")
+
+@enduml

@@ -1,0 +1,79 @@
+@startuml TelemetryClassDiagram
+title Обработка телеметрии температуры
+
+package "Telemetry Processing" {
+  interface TelemetryProcessor {
+    + Process(reading: TelemetryReading): ProcessingResult
+    + Validate(reading: TelemetryReading): ValidationResult
+  }
+  
+  class TemperatureProcessor implements TelemetryProcessor {
+    - config: TemperatureConfig
+    - validator: TelemetryValidator
+    - calculator: EnergyCalculator
+    + Process(reading: TelemetryReading): ProcessingResult
+    + Validate(reading: TelemetryReading): ValidationResult
+    - CalculateAverage(readings: List<TelemetryReading>): double
+    - DetectAnomaly(reading: TelemetryReading): bool
+  }
+  
+  class TelemetryValidator {
+    + ValidateRange(reading: TelemetryReading): ValidationResult
+    + ValidateFrequency(deviceId: string, timestamp: DateTime): ValidationResult
+    + CheckDeviceStatus(deviceId: string): DeviceStatus
+  }
+  
+  class EnergyCalculator {
+    + CalculateEnergyConsumption(readings: List<TelemetryReading>): EnergyMetrics
+    + PredictNextHourConsumption(history: List<TelemetryReading>): double
+    + OptimizeSchedule(currentTemp: double, targetTemp: double): OptimizationResult
+  }
+}
+
+package "Data Models" {
+  class TelemetryReading {
+    - DeviceId: string
+    - Timestamp: DateTime
+    - Temperature: double
+    - Humidity: double
+    - BatteryLevel: int
+    - SignalStrength: int
+    + GetQualityScore(): double
+    + IsValid(): bool
+  }
+  
+  class TemperatureConfig {
+    - MinAllowedTemp: double
+    - MaxAllowedTemp: double
+    - UpdateFrequency: TimeSpan
+    - AnomalyThreshold: double
+    + GetOptimalRange(deviceType: DeviceType): TemperatureRange
+  }
+  
+  class ProcessingResult {
+    - IsSuccess: bool
+    - ProcessedData: ProcessedTelemetry
+    - Anomalies: List<Anomaly>
+    - Recommendations: List<Recommendation>
+    + HasAnomalies(): bool
+  }
+  
+  class EnergyMetrics {
+    - CurrentConsumption: double
+    - DailyTotal: double
+    - CostEstimate: decimal
+    - EfficiencyScore: double
+    + CalculateSavings(): SavingsInfo
+  }
+}
+
+
+TelemetryProcessor <|-- TemperatureProcessor
+TemperatureProcessor --> TelemetryValidator
+TemperatureProcessor --> EnergyCalculator
+TemperatureProcessor --> TelemetryReading
+TemperatureProcessor --> TemperatureConfig
+TelemetryProcessor --> ProcessingResult
+EnergyCalculator --> EnergyMetrics
+
+@enduml

@@ -1,0 +1,28 @@
+@startuml C4_Component_Scenario
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Container(app_api, "API Gateway", "Go", "Единая точка входа, аутентификация, маршрутизация")
+
+System_Boundary(scenario_boundary, "Сценарии и автоматизация") {
+    Component(scenario_api, "API", "HTTP", "API для управления сценариями")
+    Component(rule_engine, "Сервис ролей", "Go", "Движок выполнения правил")
+    Component(trigger_manager, "Сервис триггеров", "Go", "Менеджер триггеров событий")
+    Component(action_dispatcher, "Сервис событий", "Go", "Диспетчер действий")
+    Component(scenario_composer, "Сервис-конструктор сценариев", "Go", "Визуальный конструктор сценариев")
+    Component(scenario_validator, "Сервис валидации", "Go", "Валидатор сценариев")
+}
+
+ContainerDb(scenario_db, "База сценариев", "PostgreSQL", "Правила, триггеры, действия")
+ContainerQueue(message_broker, "Брокер сообщений", "Kafka")
+
+Rel(scenario_api, scenario_composer, "Создание сценариев", "HTTP")
+Rel(scenario_composer, scenario_validator, "Проверка корректности", "sync")
+Rel(scenario_validator, scenario_db, "Сохранение сценариев", "SQL")
+Rel(scenario_validator, message_broker, "Отправка событиев о сценариях", "SQL")
+Rel(trigger_manager, message_broker, "Подписка на события", "HTTP")
+Rel(trigger_manager, rule_engine, "Активация правил", "in-mem")
+Rel(rule_engine, action_dispatcher, "Выполнение действий", "async")
+Rel(action_dispatcher, message_broker, "Отправка команд", "HTTP")
+Rel(app_api, scenario_api, "Отправка запросов клиента", "HTTP")
+
+@enduml

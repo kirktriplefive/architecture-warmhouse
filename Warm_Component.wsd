@@ -1,0 +1,29 @@
+@startuml C4_Component_Heating
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Container(app_api, "API Gateway", "Go", "Единая точка входа, аутентификация, маршрутизация")
+
+System_Boundary(heating_boundary, "Контроль температуры") {
+    Component(warm_api, "API", "HTTP", "API управления отоплением")
+    Component(thermostat_manager, "Сервис управления датчиками", "Go", "Управление термостатами")
+    Component(temperature_scheduler, "Сервис установки расписания", "Go", "Расписания температуры")
+    Component(device_connector, "Сервис для коннекта", "Go", "Подключение к IoT устройствам")
+    Component(telemetry_processor, "Обработка показаний", "Go", "Обработка телеметрии")
+}
+
+ContainerDb(database_warm, "База отопления", "PostgreSQL", "Температура, настройки термостатов")
+ContainerQueue(message_broker, "Брокер сообщений", "Kafka")
+System_Ext(sensor_warm, "Датчик температуры", "IoT устройство") 
+
+Rel(warm_api, thermostat_manager, "Управление термостатами", "HTTP")
+Rel(warm_api, temperature_scheduler, "Настройка расписаний", "HTTP")
+Rel(temperature_scheduler, database_warm, "Сохранение расписания", "SQL")
+Rel(thermostat_manager, database_warm, "Получение расписания", "SQL")
+Rel(warm_api, database_warm, "Получение показаний", "SQL")
+Rel(thermostat_manager, device_connector, "Отправка команд устройствам", "async")
+Rel(device_connector, sensor_warm, "Взаимодействие с датчиками", "MQTT")
+Rel(telemetry_processor, message_broker, "Получение телеметрии", "AMQP")
+Rel(telemetry_processor, database_warm, "Сохранение данных", "SQL")
+Rel(app_api, warm_api, "Отправка запросов клиента", "HTTP")
+
+@enduml
